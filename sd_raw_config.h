@@ -55,6 +55,7 @@
 #if defined(__AVR_ATmega8__) || \
     defined(__AVR_ATmega48__) || \
     defined(__AVR_ATmega88__) || \
+    defined(__AVR_ATmega328P__) || \
     defined(__AVR_ATmega168__)
     #define configure_pin_mosi() DDRB |= (1 << DDB3)
     #define configure_pin_sck() DDRB |= (1 << DDB5)
