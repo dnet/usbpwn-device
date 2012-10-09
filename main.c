@@ -202,9 +202,7 @@ uint32_t offset = 0;
 uint8_t sd_buf, lastbuf;
 uchar written = 1;
 
-static uchar scankeys(void) {
-  uchar retval=0;
-  
+static void scankeys(void) {
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
 	if (sd_buf >= 'a' && sd_buf <= 'z') {
 		reportBuffer[2] = sd_buf - 'a' + 4;
@@ -232,14 +230,11 @@ static uchar scankeys(void) {
 		}
 		written = 0;
 	}
-	retval|=1; /* Must have been a change at some point, since debounce is done */
-  
-  return retval;
 }
 
 
 int main(void) {
-  uchar   updateNeeded = 0;
+  uchar   updateNeeded = 1;
   uchar   idleCounter = 0;
 
   wdt_enable(WDTO_2S); /* Enable watchdog timer 2s */
@@ -254,7 +249,7 @@ int main(void) {
     wdt_reset(); /* Reset the watchdog */
     usbPoll(); /* Poll the USB stack */
 
-    updateNeeded|=scankeys(); /* Scan the keyboard for changes */
+    scankeys(); /* Scan the keyboard for changes */
     
     /* Check timer if we need periodic reports */
     if(TIFR & (1<<TOV0)){
@@ -271,7 +266,6 @@ int main(void) {
     
     /* If an update is needed, send the report */
     if(updateNeeded && usbInterruptIsReady()){
-      updateNeeded = 0;
       usbSetInterrupt(reportBuffer, sizeof(reportBuffer));
 	  written = 1;
     }
