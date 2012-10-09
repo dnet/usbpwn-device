@@ -201,7 +201,7 @@ static uchar scankeys(void) {
   uchar retval=0;
   
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	reportBuffer[0] = 0;
+	reportBuffer[0] = (foo % 2) ? 0 : 2;
 	reportBuffer[++reportIndex] = foo;
 	if (written) {
 		if (foo++ == 29) foo = 4;
