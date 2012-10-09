@@ -193,14 +193,13 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
   return 0x01;
 }
 
-int a = 1;
 uchar foo = 4;
 uchar written = 1;
 
 static uchar scankeys(void) {
   uchar reportIndex=1; /* First available report entry is 2 */
   uchar retval=0;
-  if (a++ == 2000) {
+  
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
 	reportBuffer[0] = 0;
 	reportBuffer[++reportIndex] = foo;
@@ -208,9 +207,8 @@ static uchar scankeys(void) {
 		if (foo++ == 29) foo = 4;
 		written = 0;
 	}
-	a = 1;
 	retval|=1; /* Must have been a change at some point, since debounce is done */
-  }
+  
   return retval;
 }
 
