@@ -204,9 +204,9 @@ uchar written = 1;
 
 static void scankeys(void) {
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	if (sd_buf >= 'a' && sd_buf <= 'z') {
+	if (sd_buf >= 'a' && sd_buf <= 'x') {
 		reportBuffer[2] = sd_buf - 'a' + 4;
-	} else if (sd_buf >= 'A' && sd_buf <= 'Z') {
+	} else if (sd_buf >= 'A' && sd_buf <= 'X') {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = sd_buf - 'A' + 4;
 	} else if (sd_buf == ',') {
@@ -215,6 +215,14 @@ static void scankeys(void) {
 		reportBuffer[2] = 44;
 	} else if (sd_buf == '\n') {
 		reportBuffer[2] = 40;
+	} else if (sd_buf == 'Z')  {
+		reportBuffer[0] = 2;
+		reportBuffer[2] = 28;
+	} else if (sd_buf == 'Y')  {
+		reportBuffer[0] = 2;
+		reportBuffer[2] = 29;
+	} else if (sd_buf == 'z')  { reportBuffer[2] = 28;
+	} else if (sd_buf == 'y')  { reportBuffer[2] = 29;
 	}
 	if (written) {
 		lastbuf = sd_buf;
