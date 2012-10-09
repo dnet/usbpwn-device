@@ -209,12 +209,6 @@ static void scankeys(void) {
 	} else if (sd_buf >= 'A' && sd_buf <= 'X') {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = sd_buf - 'A' + 4;
-	} else if (sd_buf == ',') {
-		reportBuffer[2] = 54;
-	} else if (sd_buf == ' ') {
-		reportBuffer[2] = 44;
-	} else if (sd_buf == '\n') {
-		reportBuffer[2] = 40;
 	} else if (sd_buf == 'Z')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 28;
@@ -223,6 +217,9 @@ static void scankeys(void) {
 		reportBuffer[2] = 29;
 	} else if (sd_buf == 'z')  { reportBuffer[2] = 28;
 	} else if (sd_buf == 'y')  { reportBuffer[2] = 29;
+	} else if (sd_buf == '.')  { reportBuffer[2] = 55;
+	} else if (sd_buf == ' ')  { reportBuffer[2] = 44;
+	} else if (sd_buf == '\n') { reportBuffer[2] = 40;
 	}
 	if (written) {
 		lastbuf = sd_buf;
