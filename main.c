@@ -193,6 +193,24 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
   return 0x01;
 }
 
+int a = 1;
+uchar foo = 4;
+
+static uchar scankeys(void) {
+  uchar reportIndex=1; /* First available report entry is 2 */
+  uchar retval=0;
+  if (a++ == 2000) {
+    memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
+	reportBuffer[0] = 2;
+	reportBuffer[++reportIndex] = foo;
+	if (foo++ == 30) foo = 4;
+	a = 1;
+	retval|=1; /* Must have been a change at some point, since debounce is done */
+  }
+  return retval;
+}
+
+
 int main(void) {
   uchar   updateNeeded = 0;
   uchar   idleCounter = 0;
@@ -209,7 +227,7 @@ int main(void) {
     wdt_reset(); /* Reset the watchdog */
     usbPoll(); /* Poll the USB stack */
 
-    //updateNeeded|=scankeys(); /* Scan the keyboard for changes */
+    updateNeeded|=scankeys(); /* Scan the keyboard for changes */
     
     /* Check timer if we need periodic reports */
     if(TIFR & (1<<TOV0)){
