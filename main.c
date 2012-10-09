@@ -26,6 +26,10 @@
 /* Now included from the makefile */
 //#include "keycodes.h"
 
+#include <sd-reader_config.h>
+#include <sd_raw.h>
+#include <sd_raw_config.h>
+
 #include "usbdrv.h"
 #define DEBUG_LEVEL 0
 #include "oddebug.h"
@@ -143,6 +147,7 @@ static void hardwareInit(void) {
   DDRD = 0x02;    /* 0000 0010 bin: remove USB reset condition */
   /* configure timer 0 for a rate of 12M/(1024 * 256) = 45.78 Hz (~22ms) */
   TCCR0 = 5;      /* timer 0 prescaler: 1024 */
+  sd_raw_init();
 }
 
 uchar expectReport=0;
@@ -193,18 +198,38 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
   return 0x01;
 }
 
-uchar foo = 4;
+uint32_t offset = 0;
+uint8_t sd_buf, lastbuf;
 uchar written = 1;
 
 static uchar scankeys(void) {
-  uchar reportIndex=1; /* First available report entry is 2 */
   uchar retval=0;
   
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	reportBuffer[0] = (foo % 2) ? 0 : 2;
-	reportBuffer[++reportIndex] = foo;
+	if (sd_buf >= 'a' && sd_buf <= 'z') {
+		reportBuffer[2] = sd_buf - 'a' + 4;
+	} else if (sd_buf >= 'A' && sd_buf <= 'Z') {
+		reportBuffer[0] = 2;
+		reportBuffer[2] = sd_buf - 'A' + 4;
+	} else if (sd_buf == ',') {
+		reportBuffer[2] = 54;
+	} else if (sd_buf == ' ') {
+		reportBuffer[2] = 44;
+	} else if (sd_buf == '\n') {
+		reportBuffer[2] = 40;
+	}
 	if (written) {
-		if (foo++ == 29) foo = 4;
+		lastbuf = sd_buf;
+		sd_raw_read(offset, &sd_buf, 1);
+		if (sd_buf == 0) {
+			offset = 0;
+			sd_buf = '\n';
+		} else if (lastbuf == sd_buf) {
+			lastbuf = 0;
+			sd_buf = 0;
+		} else {
+			offset++;
+		}
 		written = 0;
 	}
 	retval|=1; /* Must have been a change at some point, since debounce is done */
