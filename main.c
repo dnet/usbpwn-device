@@ -195,15 +195,19 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 
 int a = 1;
 uchar foo = 4;
+uchar written = 1;
 
 static uchar scankeys(void) {
   uchar reportIndex=1; /* First available report entry is 2 */
   uchar retval=0;
   if (a++ == 2000) {
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	reportBuffer[0] = 2;
+	reportBuffer[0] = 0;
 	reportBuffer[++reportIndex] = foo;
-	if (foo++ == 30) foo = 4;
+	if (written) {
+		if (foo++ == 29) foo = 4;
+		written = 0;
+	}
 	a = 1;
 	retval|=1; /* Must have been a change at some point, since debounce is done */
   }
@@ -246,6 +250,7 @@ int main(void) {
     if(updateNeeded && usbInterruptIsReady()){
       updateNeeded = 0;
       usbSetInterrupt(reportBuffer, sizeof(reportBuffer));
+	  written = 1;
     }
   }
   return 0;
