@@ -149,7 +149,6 @@ static uint8_t raw_block_written;
 static void sd_raw_send_byte(uint8_t b);
 static uint8_t sd_raw_rec_byte();
 static uint8_t sd_raw_send_command_r1(uint8_t command, uint32_t arg);
-static uint16_t sd_raw_send_command_r2(uint8_t command, uint32_t arg);
 
 /**
  * \ingroup sd_raw
@@ -337,42 +336,6 @@ uint8_t sd_raw_send_command_r1(uint8_t command, uint32_t arg)
         if(response != 0xff)
             break;
     }
-
-    return response;
-}
-
-/**
- * \ingroup sd_raw
- * Send a command to the memory card which responses with a R2 response.
- *
- * \param[in] command The command to send.
- * \param[in] arg The argument for command.
- * \returns The command answer.
- */
-uint16_t sd_raw_send_command_r2(uint8_t command, uint32_t arg)
-{
-    uint16_t response;
-    
-    /* wait some clock cycles */
-    sd_raw_rec_byte();
-
-    /* send command via SPI */
-    sd_raw_send_byte(0x40 | command);
-    sd_raw_send_byte((arg >> 24) & 0xff);
-    sd_raw_send_byte((arg >> 16) & 0xff);
-    sd_raw_send_byte((arg >> 8) & 0xff);
-    sd_raw_send_byte((arg >> 0) & 0xff);
-    sd_raw_send_byte(command == CMD_GO_IDLE_STATE ? 0x95 : 0xff);
-    
-    /* receive response */
-    for(uint8_t i = 0; i < 10; ++i)
-    {
-        response = sd_raw_rec_byte();
-        if(response != 0xff)
-            break;
-    }
-    response <<= 8;
-    response |= sd_raw_rec_byte();
 
     return response;
 }
