@@ -178,14 +178,13 @@ uchar usbFunctionSetup(uchar data[8]) {
   return 0;
 }
 
+uchar prevfoo = 255;
+uchar foo = 0;
+
 uchar usbFunctionWrite(uchar *data, uchar len) {
   if ((expectReport)&&(len==1)) {
     LEDstate=data[0]; /* Get the state of all 5 LEDs */
-    if (LEDstate&LED_CAPS) { /* Check state of CAPS lock LED */
-      //PORTD|=0x02; XXX
-    } else {
-      //PORTD&=~0x02; XXX
-    }
+	foo = LEDstate & (LED_NUM | LED_SCROLL | LED_CAPS);
     expectReport=0;
     return 1;
   }
@@ -193,22 +192,16 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
   return 0x01;
 }
 
-uchar foo = 4;
-uchar written = 1;
-
 static uchar scankeys(void) {
   uchar reportIndex=1; /* First available report entry is 2 */
   uchar retval=0;
   
-    memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	reportBuffer[0] = 0;
-	reportBuffer[++reportIndex] = foo;
-	if (written) {
-		if (foo++ == 29) foo = 4;
-		written = 0;
+	if (prevfoo != foo) {
+		memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
+		prevfoo = foo;
+		reportBuffer[++reportIndex] = foo + 4;
+		retval|=1; /* Must have been a change at some point, since debounce is done */
 	}
-	retval|=1; /* Must have been a change at some point, since debounce is done */
-  
   return retval;
 }
 
@@ -230,6 +223,10 @@ int main(void) {
     usbPoll(); /* Poll the USB stack */
 
     updateNeeded|=scankeys(); /* Scan the keyboard for changes */
+	if (!updateNeeded && reportBuffer[2] != 0) {
+		memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
+		updateNeeded = 1;
+	}
     
     /* Check timer if we need periodic reports */
     if(TIFR & (1<<TOV0)){
@@ -248,7 +245,6 @@ int main(void) {
     if(updateNeeded && usbInterruptIsReady()){
       updateNeeded = 0;
       usbSetInterrupt(reportBuffer, sizeof(reportBuffer));
-	  written = 1;
     }
   }
   return 0;
