@@ -198,8 +198,11 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
   return 0x01;
 }
 
+#define SD2KEYS 0
+
 uint32_t offset = 0;
 uint8_t type_buf, lastbuf;
+uint8_t mode = SD2KEYS;
 uchar written = 1;
 
 static inline void buf2report() {
@@ -249,14 +252,17 @@ static void scankeys(void) {
 	buf2report();
 	if (written) {
 		lastbuf = type_buf;
-		sd_raw_read(offset, &type_buf, 1); /* TODO not just SD read */
+		switch (mode) {
+			case SD2KEYS:
+				sd_raw_read(offset, &type_buf, 1);
+				break;
+		}
 		if (type_buf == 0) {
-			offset = 0; /* TODO switch mode */
-			type_buf = '\n';
+			mode++;
 		} else if (lastbuf == type_buf) {
 			lastbuf = 0;
 			type_buf = 0;
-		} else {
+		} else if (mode == SD2KEYS) {
 			offset++;
 		}
 		written = 0;
