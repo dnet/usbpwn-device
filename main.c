@@ -202,8 +202,7 @@ uint32_t offset = 0;
 uint8_t type_buf, lastbuf;
 uchar written = 1;
 
-static void scankeys(void) {
-    memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
+static inline void buf2report() {
 	if (type_buf >= 'a' && type_buf <= 'x') {
 		reportBuffer[2] = type_buf - 'a' + 4;
 	} else if (type_buf >= 'A' && type_buf <= 'X') {
@@ -243,6 +242,11 @@ static void scankeys(void) {
 	} else if (type_buf == ' ')  { reportBuffer[2] = 44;
 	} else if (type_buf == '\n') { reportBuffer[2] = 40;
 	}
+}
+
+static void scankeys(void) {
+	memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
+	buf2report();
 	if (written) {
 		lastbuf = type_buf;
 		sd_raw_read(offset, &type_buf, 1); /* TODO not just SD read */
