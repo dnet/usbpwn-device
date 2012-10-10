@@ -199,59 +199,59 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 }
 
 uint32_t offset = 0;
-uint8_t sd_buf, lastbuf;
+uint8_t type_buf, lastbuf;
 uchar written = 1;
 
 static void scankeys(void) {
     memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	if (sd_buf >= 'a' && sd_buf <= 'x') {
-		reportBuffer[2] = sd_buf - 'a' + 4;
-	} else if (sd_buf >= 'A' && sd_buf <= 'X') {
+	if (type_buf >= 'a' && type_buf <= 'x') {
+		reportBuffer[2] = type_buf - 'a' + 4;
+	} else if (type_buf >= 'A' && type_buf <= 'X') {
 		reportBuffer[0] = 2;
-		reportBuffer[2] = sd_buf - 'A' + 4;
-	} else if (sd_buf >= '1' && sd_buf <= '9') {
-		reportBuffer[2] = sd_buf - '1' + 30;
-	} else if (sd_buf == '=')  {
+		reportBuffer[2] = type_buf - 'A' + 4;
+	} else if (type_buf >= '1' && type_buf <= '9') {
+		reportBuffer[2] = type_buf - '1' + 30;
+	} else if (type_buf == '=')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 36;
-	} else if (sd_buf == '"')  {
+	} else if (type_buf == '"')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 31;
-	} else if (sd_buf == '+')  {
+	} else if (type_buf == '+')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 32;
-	} else if (sd_buf == '/')  {
+	} else if (type_buf == '/')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 35;
-	} else if (sd_buf == '(')  {
+	} else if (type_buf == '(')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 37;
-	} else if (sd_buf == ')')  {
+	} else if (type_buf == ')')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 38;
-	} else if (sd_buf == 'Z')  {
+	} else if (type_buf == 'Z')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 28;
-	} else if (sd_buf == 'Y')  {
+	} else if (type_buf == 'Y')  {
 		reportBuffer[0] = 2;
 		reportBuffer[2] = 29;
-	} else if (sd_buf == 'z')  { reportBuffer[2] = 28;
-	} else if (sd_buf == 'y')  { reportBuffer[2] = 29;
-	} else if (sd_buf == ',')  { reportBuffer[2] = 54;
-	} else if (sd_buf == '0')  { reportBuffer[2] = 53;
-	} else if (sd_buf == '.')  { reportBuffer[2] = 55;
-	} else if (sd_buf == ' ')  { reportBuffer[2] = 44;
-	} else if (sd_buf == '\n') { reportBuffer[2] = 40;
+	} else if (type_buf == 'z')  { reportBuffer[2] = 28;
+	} else if (type_buf == 'y')  { reportBuffer[2] = 29;
+	} else if (type_buf == ',')  { reportBuffer[2] = 54;
+	} else if (type_buf == '0')  { reportBuffer[2] = 53;
+	} else if (type_buf == '.')  { reportBuffer[2] = 55;
+	} else if (type_buf == ' ')  { reportBuffer[2] = 44;
+	} else if (type_buf == '\n') { reportBuffer[2] = 40;
 	}
 	if (written) {
-		lastbuf = sd_buf;
-		sd_raw_read(offset, &sd_buf, 1);
-		if (sd_buf == 0) {
-			offset = 0;
-			sd_buf = '\n';
-		} else if (lastbuf == sd_buf) {
+		lastbuf = type_buf;
+		sd_raw_read(offset, &type_buf, 1); /* TODO not just SD read */
+		if (type_buf == 0) {
+			offset = 0; /* TODO switch mode */
+			type_buf = '\n';
+		} else if (lastbuf == type_buf) {
 			lastbuf = 0;
-			sd_buf = 0;
+			type_buf = 0;
 		} else {
 			offset++;
 		}
