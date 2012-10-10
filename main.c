@@ -34,9 +34,6 @@
 #define DEBUG_LEVEL 0
 #include "oddebug.h"
 
-#define TCCR0 TCCR0A
-#define TIFR TIFR0
-
 /* Hardware documentation:
  * ATmega-16 @12.000 MHz
  *
@@ -145,8 +142,6 @@ static void hardwareInit(void) {
   _delay_us(11);   /* delay >10ms for USB reset */ 
 
   DDRD = 0x02;    /* 0000 0010 bin: remove USB reset condition */
-  /* configure timer 0 for a rate of 12M/(1024 * 256) = 45.78 Hz (~22ms) */
-  TCCR0 = 5;      /* timer 0 prescaler: 1024 */
   sd_raw_init();
 }
 
@@ -271,9 +266,6 @@ static void scankeys(void) {
 
 
 int main(void) {
-  uchar   updateNeeded = 1;
-  uchar   idleCounter = 0;
-
   wdt_enable(WDTO_2S); /* Enable watchdog timer 2s */
   hardwareInit(); /* Initialize hardware (I/O) */
   
@@ -288,21 +280,8 @@ int main(void) {
 
     scankeys(); /* Scan the keyboard for changes */
     
-    /* Check timer if we need periodic reports */
-    if(TIFR & (1<<TOV0)){
-      TIFR = 1<<TOV0; /* Reset flag */
-      if(idleRate != 0){ /* Do we need periodic reports? */
-        if(idleCounter > 4){ /* Yes, but not yet */
-          idleCounter -= 5;   /* 22 ms in units of 4 ms */
-        }else{ /* Yes, it is time now */
-          updateNeeded = 1;
-          idleCounter = idleRate;
-        }
-      }
-    }
-    
     /* If an update is needed, send the report */
-    if(updateNeeded && usbInterruptIsReady()){
+    if(usbInterruptIsReady()){
       usbSetInterrupt(reportBuffer, sizeof(reportBuffer));
 	  written = 1;
     }
