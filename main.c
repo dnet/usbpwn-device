@@ -186,8 +186,6 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
     } else {
       //PORTD&=~0x02; XXX
     }
-    expectReport=0;
-    return 1;
   }
   expectReport=0;
   return 0x01;
