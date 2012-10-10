@@ -177,18 +177,30 @@ uchar usbFunctionSetup(uchar data[8]) {
 }
 
 #define LEDstate data[0]
+#define NUM_CAPS_MASK (LED_NUM | LED_CAPS)
+#define RECV_WAIT 0
+#define RECV_ACK 1
 #define SD2KEYS 0
+#define TEST_ECHO 1
 
+uint8_t recv_byte = 0;
+uint8_t recv_byte_pos = 0;
+uint8_t recv_state = RECV_WAIT;
 uint8_t mode = SD2KEYS;
 uint32_t offset = 0;
 
 uchar usbFunctionWrite(uchar *data, uchar len) {
   if ((expectReport)&&(len==1)) {
-    LEDstate=data[0]; /* Get the state of all 5 LEDs */
-    if (LEDstate&LED_CAPS) { /* Check state of CAPS lock LED */
-      //PORTD|=0x02; XXX
-    } else {
-      //PORTD&=~0x02; XXX
+    if (mode == TEST_ECHO && ((LEDstate & LED_SCROLL) == LED_SCROLL) && recv_state == RECV_WAIT) {
+		recv_byte |= (LEDstate & NUM_CAPS_MASK) << recv_byte_pos;
+		recv_byte_pos += 2;
+		recv_state = RECV_ACK;
+		if (recv_byte_pos == 8) {
+			sd_raw_write(offset, &recv_byte, 1);
+			recv_byte = 0;
+			recv_byte_pos = 0;
+			offset++;
+		}
     }
   }
   expectReport=0;
@@ -196,7 +208,6 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 }
 
 uint8_t type_buf, lastbuf;
-uchar written = 1;
 
 static inline void buf2report() {
 	if (type_buf >= 'a' && type_buf <= 'x') {
@@ -240,29 +251,6 @@ static inline void buf2report() {
 	}
 }
 
-static void scankeys(void) {
-	memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
-	buf2report();
-	if (written) {
-		lastbuf = type_buf;
-		switch (mode) {
-			case SD2KEYS:
-				sd_raw_read(offset, &type_buf, 1);
-				break;
-		}
-		if (type_buf == 0) {
-			mode++;
-		} else if (lastbuf == type_buf) {
-			lastbuf = 0;
-			type_buf = 0;
-		} else if (mode == SD2KEYS) {
-			offset++;
-		}
-		written = 0;
-	}
-}
-
-
 int main(void) {
   wdt_enable(WDTO_2S); /* Enable watchdog timer 2s */
   hardwareInit(); /* Initialize hardware (I/O) */
@@ -276,12 +264,33 @@ int main(void) {
     wdt_reset(); /* Reset the watchdog */
     usbPoll(); /* Poll the USB stack */
 
-    scankeys(); /* Scan the keyboard for changes */
-    
-    /* If an update is needed, send the report */
     if(usbInterruptIsReady()){
+		lastbuf = type_buf;
+		switch (mode) {
+			case SD2KEYS:
+				sd_raw_read(offset, &type_buf, 1);
+				break;
+			case TEST_ECHO:
+				if (recv_state == RECV_ACK) {
+					type_buf = '\n';
+					recv_state = RECV_WAIT;
+				} else {
+					type_buf = 0;
+				}
+				break;
+		}
+		if (type_buf == 0 && mode == SD2KEYS) {
+			mode++;
+			offset = 0;
+		} else if (lastbuf == type_buf) {
+			lastbuf = 0;
+			type_buf = 0;
+		} else if (mode == SD2KEYS) {
+			offset++;
+		}
+	memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
+	buf2report();
       usbSetInterrupt(reportBuffer, sizeof(reportBuffer));
-	  written = 1;
     }
   }
   return 0;
