@@ -177,6 +177,11 @@ uchar usbFunctionSetup(uchar data[8]) {
 }
 
 #define LEDstate data[0]
+#define SD2KEYS 0
+
+uint8_t mode = SD2KEYS;
+uint32_t offset = 0;
+
 uchar usbFunctionWrite(uchar *data, uchar len) {
   if ((expectReport)&&(len==1)) {
     LEDstate=data[0]; /* Get the state of all 5 LEDs */
@@ -190,11 +195,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
   return 0x01;
 }
 
-#define SD2KEYS 0
-
-uint32_t offset = 0;
 uint8_t type_buf, lastbuf;
-uint8_t mode = SD2KEYS;
 uchar written = 1;
 
 static inline void buf2report() {
