@@ -146,8 +146,6 @@ static void hardwareInit(void) {
 }
 
 uchar expectReport=0;
-uchar LEDstate=0;
-
 uchar usbFunctionSetup(uchar data[8]) {
   usbRequest_t *rq = (void *)data;
   usbMsgPtr = reportBuffer;
@@ -178,6 +176,7 @@ uchar usbFunctionSetup(uchar data[8]) {
   return 0;
 }
 
+#define LEDstate data[0]
 uchar usbFunctionWrite(uchar *data, uchar len) {
   if ((expectReport)&&(len==1)) {
     LEDstate=data[0]; /* Get the state of all 5 LEDs */
