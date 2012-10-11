@@ -19,6 +19,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
+#include <avr/eeprom.h>
 #include <avr/wdt.h>
 #include <util/delay.h>
 #include <string.h>
@@ -138,7 +139,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		recv_byte_pos += 2;
 		recv_state = RECV_ACK;
 		if (recv_byte_pos == 8) {
-			// TODO write recv_byte
+			eeprom_write_byte((uint8_t *)offset, recv_byte);
 			recv_byte = 0;
 			recv_byte_pos = 0;
 			offset++;
