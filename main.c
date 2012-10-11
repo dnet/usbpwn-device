@@ -38,8 +38,6 @@
 #define LED_NUM     0x01
 #define LED_CAPS    0x02
 #define LED_SCROLL  0x04
-#define LED_COMPOSE 0x08
-#define LED_KANA    0x10
 
 /* USB report descriptor (length is defined in usbconfig.h)
    This has been changed to conform to the USB keyboard boot
