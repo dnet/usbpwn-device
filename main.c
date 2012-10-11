@@ -23,9 +23,6 @@
 #include <util/delay.h>
 #include <string.h>
 
-/* Now included from the makefile */
-//#include "keycodes.h"
-
 #include <sd-reader_config.h>
 #include <sd_raw.h>
 #include <sd_raw_config.h>
