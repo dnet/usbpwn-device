@@ -34,55 +34,12 @@
 #define DEBUG_LEVEL 0
 #include "oddebug.h"
 
-/* Hardware documentation:
- * ATmega-16 @12.000 MHz
- *
- * XT1..XT2: 12MHz X-tal
- * PB0..PB7: Keyboard matrix Row0..Row7 (pins 12,11,10,5,8,7,6,9 on C64 kbd)
- * PC0..PC7: Keyboard matrix Col0..Col7 (pins 13,19,18,17,16,15,14,20 on C64 kbd)
- * PD0     : D- USB negative (needs appropriate zener-diode and resistors)
- * PD1     : UART TX
- * PD2/INT0: D+ USB positive (needs appropriate zener-diode and resistors)
- * PD7     : Keyboard matrix Row8 (Restore key)
- *
- * USB Connector:
- * -------------
- *  1 (red)    +5V
- *  2 (white)  DATA-
- *  3 (green)  DATA+
- *  4 (black)  GND
- *    
- *
- *
- *                                     VCC
- *                  +--[4k7]--+--[2k2]--+
- *      USB        GND        |                     ATmega-16
- *                            |
- *      (D-)-------+----------+--------[82r]------- PD0
- *                 |
- *      (D+)-------|-----+-------------[82r]------- PD2/INT0
- *                 |     |
- *                 _     _
- *                 ^     ^  2 x 3.6V 
- *                 |     |  zener to GND
- *                 |     |
- *                GND   GND
- */
-
 /* The LED states */
 #define LED_NUM     0x01
 #define LED_CAPS    0x02
 #define LED_SCROLL  0x04
 #define LED_COMPOSE 0x08
 #define LED_KANA    0x10
-
-
-/* Originally used as a mask for the modifier bits, but now also
-   used for other x -> 2^x conversions (lookup table). */
-const char modmask[8] PROGMEM = {
-    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80
-  };
-
 
 /* USB report descriptor (length is defined in usbconfig.h)
    This has been changed to conform to the USB keyboard boot
