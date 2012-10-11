@@ -1,8 +1,8 @@
 /*********************************************************************
- * main.c - Main firmware (ATmega16 version)                         *
- * $Id: $
- * Version 1.98ß                                                     *
+ * main.c - Main firmware                                            *
  *********************************************************************
+ * USBpwn is Copyright (C) 2012 Andras Veres-Szentkiralyi            *
+ * licensed the same as and based on C64key, see copyright below     *
  * c64key is Copyright (C) 2006-2007 Mikkel Holm Olsen               *
  * based on HID-Test by Christian Starkjohann, Objective Development *
  *********************************************************************
