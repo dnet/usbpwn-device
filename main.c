@@ -28,7 +28,6 @@
 #include <sd_raw_config.h>
 
 #include "usbdrv.h"
-#define DEBUG_LEVEL 0
 #include "oddebug.h"
 
 /* The LED states */
