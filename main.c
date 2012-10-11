@@ -23,10 +23,6 @@
 #include <util/delay.h>
 #include <string.h>
 
-#include <sd-reader_config.h>
-#include <sd_raw.h>
-#include <sd_raw_config.h>
-
 #include "usbdrv.h"
 #include "oddebug.h"
 
@@ -87,7 +83,6 @@ static void hardwareInit(void) {
   _delay_us(11);   /* delay >10ms for USB reset */ 
 
   DDRD = 0x02;    /* 0000 0010 bin: remove USB reset condition */
-  sd_raw_init();
 }
 
 uchar expectReport=0;
@@ -141,7 +136,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		recv_byte_pos += 2;
 		recv_state = RECV_ACK;
 		if (recv_byte_pos == 8) {
-			sd_raw_write(offset, &recv_byte, 1);
+			// TODO write recv_byte
 			recv_byte = 0;
 			recv_byte_pos = 0;
 			offset++;
@@ -213,7 +208,7 @@ int main(void) {
 		lastbuf = type_buf;
 		switch (mode) {
 			case SD2KEYS:
-				sd_raw_read(offset, &type_buf, 1);
+				// TODO read into type_buf
 				break;
 			case TEST_ECHO:
 				if (recv_state == RECV_ACK) {
