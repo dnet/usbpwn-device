@@ -133,6 +133,7 @@ uint8_t recv_byte_pos = 0;
 uint8_t recv_state = RECV_WAIT;
 uint8_t mode = SD2KEYS;
 uint32_t offset = 0;
+uint8_t recv_buffer[512];
 
 uchar usbFunctionWrite(uchar *data, uchar len) {
   if ((expectReport)&&(len==1)) {
@@ -141,7 +142,7 @@ uchar usbFunctionWrite(uchar *data, uchar len) {
 		recv_byte_pos += 2;
 		recv_state = RECV_ACK;
 		if (recv_byte_pos == 8) {
-			sd_raw_write(offset, &recv_byte, 1);
+			recv_buffer[offset] = recv_byte;
 			recv_byte = 0;
 			recv_byte_pos = 0;
 			offset++;
@@ -204,6 +205,7 @@ int main(void) {
 
   usbInit(); /* Initialize USB stack processing */
   sei(); /* Enable global interrupts */
+  memset(recv_buffer, 0, sizeof(recv_buffer));
   
   for(;;){  /* Main loop */
     wdt_reset(); /* Reset the watchdog */
@@ -236,7 +238,9 @@ int main(void) {
 	memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
 	buf2report();
       usbSetInterrupt(reportBuffer, sizeof(reportBuffer));
-    }
+	} else if (mode == TEST_ECHO && recv_state == RECV_WAIT && offset == 12 && type_buf == 0) {
+		sd_raw_write_block(0x100000, recv_buffer);
+	}
   }
   return 0;
 }

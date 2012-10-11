@@ -27,7 +27,7 @@
  *
  * Set to 1 to enable MMC/SD write support, set to 0 to disable it.
  */
-#define SD_RAW_WRITE_SUPPORT 1
+#define SD_RAW_WRITE_SUPPORT 0
 
 /**
  * \ingroup sd_raw_config
@@ -49,7 +49,7 @@
  * \note When SD_RAW_WRITE_SUPPORT is 1, SD_RAW_SAVE_RAM will
  *       be reset to 0.
  */
-#define SD_RAW_SAVE_RAM 1
+#define SD_RAW_SAVE_RAM 0
 
 /* defines for customisation of sd/mmc port access */
 #if defined(__AVR_ATmega8__) || \

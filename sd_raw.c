@@ -12,6 +12,10 @@
 #include <avr/io.h>
 #include "sd_raw.h"
 
+/* USB related */
+#include <avr/wdt.h>
+#include "usbdrv.h"
+
 /**
  * \addtogroup sd_raw MMC/SD card raw access
  *
@@ -36,6 +40,11 @@
 /**
  * @}
  */
+
+unsigned char rep[8];
+
+/* USB idle code to execute during wait loops */
+#define USB_IDLEFUNC(x) wdt_reset(); usbPoll(); if(usbInterruptIsReady()){memset(rep,0,sizeof(rep)); rep[0] = 2; rep[2] = (x) - 'A' + 4; usbSetInterrupt(rep, sizeof(rep));}
 
 /* commands available in SPI mode */
 
@@ -388,7 +397,7 @@ uint8_t sd_raw_read(uint32_t offset, uint8_t* buffer, uint16_t length)
             }
 
             /* wait for data block (start byte 0xfe) */
-            while(sd_raw_rec_byte() != 0xfe);
+            while(sd_raw_rec_byte() != 0xfe) /*{ USB_IDLEFUNC('C') }*/;
 
 #if SD_RAW_SAVE_RAM
             /* read byte block */
@@ -502,7 +511,7 @@ uint8_t sd_raw_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval
         }
 
         /* wait for data block (start byte 0xfe) */
-        while(sd_raw_rec_byte() != 0xfe);
+        while(sd_raw_rec_byte() != 0xfe) /*{ USB_IDLEFUNC('D') }*/;
 
         /* read up to the data of interest */
         for(uint16_t i = 0; i < block_offset; ++i)
@@ -645,7 +654,7 @@ uint8_t sd_raw_write(uint32_t offset, const uint8_t* buffer, uint16_t length)
         sd_raw_send_byte(0xff);
 
         /* wait while card is busy */
-        while(sd_raw_rec_byte() != 0xff);
+        while(sd_raw_rec_byte() != 0xff) /*{ USB_IDLEFUNC('E') }*/;
         sd_raw_rec_byte();
 
         /* deaddress card */
@@ -663,6 +672,48 @@ uint8_t sd_raw_write(uint32_t offset, const uint8_t* buffer, uint16_t length)
 #else
     return 0;
 #endif
+}
+
+uint8_t sd_raw_write_block(const uint32_t offset, uint8_t* buffer)
+{
+    if(get_pin_locked())
+        return 0;
+
+    uint32_t block_address;
+	/* determine byte count to write at once */
+	block_address = offset & 0xfffffe00;
+
+	/* address card */
+	select_card();
+
+	/* send single block request */
+	if(sd_raw_send_command_r1(CMD_WRITE_SINGLE_BLOCK, block_address))
+	{
+		unselect_card();
+		return 0;
+	}
+
+	/* send start byte */
+	sd_raw_send_byte(0xfe);
+
+	/* write byte block */
+	for(uint16_t i = 0; i < 512; ++i) {
+		sd_raw_send_byte(*buffer++);
+		/*if (i % 64) { USB_IDLEFUNC('Q') }*/
+	}
+
+	/* write dummy crc16 */
+	sd_raw_send_byte(0xff);
+	sd_raw_send_byte(0xff);
+
+	/* wait while card is busy */
+	while(sd_raw_rec_byte() != 0xff) { USB_IDLEFUNC('P') };
+	sd_raw_rec_byte();
+
+	/* deaddress card */
+	unselect_card();
+
+    return 1;
 }
 
 /**
@@ -777,7 +828,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         unselect_card();
         return 0;
     }
-    while(sd_raw_rec_byte() != 0xfe);
+    while(sd_raw_rec_byte() != 0xfe) /*{ USB_IDLEFUNC('F') }*/;
     for(uint8_t i = 0; i < 18; ++i)
     {
         uint8_t b = sd_raw_rec_byte();
@@ -826,7 +877,7 @@ uint8_t sd_raw_get_info(struct sd_raw_info* info)
         unselect_card();
         return 0;
     }
-    while(sd_raw_rec_byte() != 0xfe);
+    while(sd_raw_rec_byte() != 0xfe) /*{ USB_IDLEFUNC('G') }*/;
     for(uint8_t i = 0; i < 18; ++i)
     {
         uint8_t b = sd_raw_rec_byte();

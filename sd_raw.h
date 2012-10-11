@@ -128,6 +128,7 @@ uint8_t sd_raw_read_interval(uint32_t offset, uint8_t* buffer, uint16_t interval
 uint8_t sd_raw_write(uint32_t offset, const uint8_t* buffer, uint16_t length);
 uint8_t sd_raw_write_interval(uint32_t offset, uint8_t* buffer, uint16_t length, sd_raw_write_interval_handler_t callback, void* p);
 uint8_t sd_raw_sync();
+uint8_t sd_raw_write_block(const uint32_t offset, uint8_t* buffer);
 
 uint8_t sd_raw_get_info(struct sd_raw_info* info);
 
