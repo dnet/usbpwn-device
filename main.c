@@ -123,6 +123,8 @@ uchar usbFunctionSetup(uchar data[8]) {
 #define SD2KEYS 0
 #define TEST_ECHO 1
 
+const char dropper[] PROGMEM = {'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'};
+
 uint8_t recv_byte = 0;
 uint8_t recv_byte_pos = 0;
 uint8_t recv_state = RECV_WAIT;
@@ -208,7 +210,7 @@ int main(void) {
 		lastbuf = type_buf;
 		switch (mode) {
 			case SD2KEYS:
-				// TODO read into type_buf
+				type_buf = pgm_read_byte(&dropper[offset]);
 				break;
 			case TEST_ECHO:
 				if (recv_state == RECV_ACK) {
@@ -219,7 +221,7 @@ int main(void) {
 				}
 				break;
 		}
-		if (type_buf == 0 && mode == SD2KEYS) {
+		if (offset == sizeof(dropper) - 1 && mode == SD2KEYS) {
 			mode++;
 			offset = 0;
 		} else if (lastbuf == type_buf) {
