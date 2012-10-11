@@ -81,12 +81,6 @@ static uchar idleRate;           /* in 4 ms units */
 static uchar protocolVer=1;      /* 0 is the boot protocol, 1 is report protocol */
 
 static void hardwareInit(void) {
-  PORTB = 0xFF;   /* Port B are row drivers - enable pull-up */
-  DDRB  = 0x00;   /* Port B is input */
-
-  PORTC = 0xFF;   /* activate all pull-ups */
-  DDRC  = 0x00;   /* all pins input */
-  
   PORTD = 0xfa;   /* 1111 1010 bin: activate pull-ups except on USB lines */
   DDRD  = 0x07;   /* 0000 0111 bin: all pins input except USB (-> USB reset) */
 
