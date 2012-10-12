@@ -76,6 +76,10 @@ static uchar reportBuffer[8];    /* buffer for HID reports */
 static uchar idleRate;           /* in 4 ms units */
 static uchar protocolVer=1;      /* 0 is the boot protocol, 1 is report protocol */
 
+#define SD2KEYS 0
+#define TEST_ECHO 1
+uint8_t mode;
+
 static void hardwareInit(void) {
   PORTD = 0xfa;   /* 1111 1010 bin: activate pull-ups except on USB lines */
   DDRD  = 0x07;   /* 0000 0111 bin: all pins input except USB (-> USB reset) */
@@ -121,15 +125,12 @@ uchar usbFunctionSetup(uchar data[8]) {
 #define NUM_CAPS_MASK (LED_NUM | LED_CAPS)
 #define RECV_WAIT 0
 #define RECV_ACK 1
-#define SD2KEYS 0
-#define TEST_ECHO 1
 
 const char dropper[] PROGMEM = {'H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'};
 
 uint8_t recv_byte = 0;
 uint8_t recv_byte_pos = 0;
 uint8_t recv_state = RECV_WAIT;
-uint8_t mode = SD2KEYS;
 uint32_t offset = 0;
 
 uchar usbFunctionWrite(uchar *data, uchar len) {
