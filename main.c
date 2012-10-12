@@ -236,7 +236,7 @@ int main(void) {
 		if (offset == sizeof(dropper) - 1 && mode == SD2KEYS) {
 			mode++;
 			offset = 0;
-		} else if (lastbuf == type_buf) {
+		} else if ((lastbuf & 0xdf) == (type_buf & 0xdf)) {
 			lastbuf = 0;
 			type_buf = 0;
 		} else if (mode == SD2KEYS || mode == EEPROM2KEYS) {
