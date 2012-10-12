@@ -78,6 +78,7 @@ static uchar protocolVer=1;      /* 0 is the boot protocol, 1 is report protocol
 
 #define SD2KEYS 0
 #define TEST_ECHO 1
+#define EEPROM2KEYS 2
 uint8_t mode;
 
 static void hardwareInit(void) {
@@ -88,6 +89,9 @@ static void hardwareInit(void) {
   _delay_us(11);   /* delay >10ms for USB reset */ 
 
   DDRD = 0x02;    /* 0000 0010 bin: remove USB reset condition */
+  PORTB |= (1 << PB5); /* pull-up on Arduino D13 */
+  _delay_us(1);
+  mode = ((PINB & (1 << PB5)) == (1 << PB5) ? SD2KEYS : EEPROM2KEYS);
 }
 
 uchar expectReport=0;
@@ -222,6 +226,12 @@ int main(void) {
 					type_buf = 0;
 				}
 				break;
+			case EEPROM2KEYS:
+				type_buf = eeprom_read_byte((uint8_t *)(offset >> 1));
+				if ((offset & 1) == 0) type_buf >>= 4;
+				type_buf &= 0x0f;
+				if (type_buf < 10) type_buf = '0' + type_buf; else type_buf = 'A' + type_buf - 10;
+				break;
 		}
 		if (offset == sizeof(dropper) - 1 && mode == SD2KEYS) {
 			mode++;
@@ -229,7 +239,7 @@ int main(void) {
 		} else if (lastbuf == type_buf) {
 			lastbuf = 0;
 			type_buf = 0;
-		} else if (mode == SD2KEYS) {
+		} else if (mode == SD2KEYS || mode == EEPROM2KEYS) {
 			offset++;
 		}
 	memset(reportBuffer,0,sizeof(reportBuffer)); /* Clear report buffer */
