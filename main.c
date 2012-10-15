@@ -77,7 +77,7 @@ static uchar idleRate;           /* in 4 ms units */
 static uchar protocolVer=1;      /* 0 is the boot protocol, 1 is report protocol */
 
 #define SD2KEYS 0
-#define TEST_ECHO 1
+#define KEYS2EEPROM 1
 #define EEPROM2KEYS 2
 uint8_t mode;
 
@@ -139,7 +139,7 @@ uint32_t offset = 0;
 
 uchar usbFunctionWrite(uchar *data, uchar len) {
   if ((expectReport)&&(len==1)) {
-    if (mode == TEST_ECHO && ((LEDstate & LED_SCROLL) == LED_SCROLL) && recv_state == RECV_WAIT) {
+    if (mode == KEYS2EEPROM && ((LEDstate & LED_SCROLL) == LED_SCROLL) && recv_state == RECV_WAIT) {
 		recv_byte |= (LEDstate & NUM_CAPS_MASK) << recv_byte_pos;
 		recv_byte_pos += 2;
 		recv_state = RECV_ACK;
@@ -218,7 +218,7 @@ int main(void) {
 			case SD2KEYS:
 				type_buf = pgm_read_byte(&dropper[offset]);
 				break;
-			case TEST_ECHO:
+			case KEYS2EEPROM:
 				if (recv_state == RECV_ACK) {
 					type_buf = '\n';
 					recv_state = RECV_WAIT;
